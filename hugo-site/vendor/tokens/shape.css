@@ -1,0 +1,24 @@
+:root {
+  /* Radii. Hugo is rounded but not pill-happy: soft rectangles + true pills for tags. */
+  --radius-none: 0;
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 32px;
+  --radius-pill: 999px;
+  --radius-card: var(--radius-lg);
+  --radius-control: var(--radius-pill);
+
+  /* Borders. The system's structure is INK LINE, matching the illustration. */
+  --border-hair: 1px solid var(--line-hairline);
+  --border-ink: 2px solid var(--line-ink);
+  --border-ink-heavy: 3px solid var(--line-ink);
+  --border-plum: 2px solid var(--hugo-plum-800);
+
+  /* Shadows. Used sparingly. Hard offset only — never a soft blurry drop. */
+  --shadow-none: none;
+  --shadow-sticker: 3px 3px 0 var(--hugo-ink);
+  --shadow-sticker-lilac: 4px 4px 0 var(--hugo-lilac-400);
+  --shadow-lift: 0 2px 0 var(--hugo-plum-900);
+  --shadow-photo: 0 18px 40px -24px rgba(22, 17, 15, 0.45);
+}

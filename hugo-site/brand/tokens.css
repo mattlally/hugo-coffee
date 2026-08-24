@@ -1,0 +1,197 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   HUGO — site tokens
+   ───────────────────────────────────────────────────────────────────────────
+   The Hugo design system ships a complete, already-semantic token set. This
+   file DOES NOT redefine it. It layers on only what a scroll site needs and
+   the design system does not carry:
+
+     1. metric-matched font fallbacks   (PRINCIPLES §9 — the one real gap)
+     2. motion curves at library standard (PRINCIPLES §1)
+     3. section theme classes            (PRINCIPLES §13)
+     4. fluid display type               (PRINCIPLES §3)
+     5. hero-runway geometry
+
+   Source of truth for colour/spacing/shape stays ../assets/... design system.
+   Every value invented here is logged in BRAND.md §Assumptions.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+/* ─── 1. Metric-matched fallbacks ──────────────────────────────────────────
+   The design system loads 4 Google Fonts with no fallback metrics, so every
+   first paint reflows. These four faces make the fallback occupy identical
+   space. Values computed from each font's head/hhea tables against Arial.
+   PRINCIPLES §9 / patterns/text/metric-matched-fallbacks.md               */
+
+@font-face {
+  font-family: "Fredoka Fallback";
+  src: local("Arial");
+  ascent-override: 92.50%;
+  descent-override: 24.30%;
+  size-adjust: 105.80%;
+}
+@font-face {
+  font-family: "Space Grotesk Fallback";
+  src: local("Arial");
+  ascent-override: 98.40%;
+  descent-override: 29.10%;
+  size-adjust: 100.60%;
+}
+@font-face {
+  font-family: "EB Garamond Fallback";
+  src: local("Times New Roman");
+  ascent-override: 83.60%;
+  descent-override: 25.40%;
+  size-adjust: 96.20%;
+}
+@font-face {
+  font-family: "Bagel Fat One Fallback";
+  src: local("Arial Black");
+  ascent-override: 96.10%;
+  descent-override: 25.60%;
+  size-adjust: 112.40%;
+}
+
+:root {
+  /* Re-point the design system's families through the matched fallbacks.
+     Family order and the real faces are unchanged. */
+  --font-display: "Fredoka", "Fredoka Fallback", system-ui, sans-serif;
+  --font-sticker: "Bagel Fat One", "Bagel Fat One Fallback", "Fredoka", system-ui, sans-serif;
+  --font-tagline: "EB Garamond", "EB Garamond Fallback", Georgia, serif;
+  --font-body: "Space Grotesk", "Space Grotesk Fallback", ui-sans-serif, system-ui, sans-serif;
+
+  /* ─── 2. Motion ─────────────────────────────────────────────────────────
+     The design system's --ease-out is cubic-bezier(.22,.61,.36,1), which is a
+     much flatter curve than the library's measured house curve. Air and Cosmos
+     independently converged on cubic-bezier(.22,1,.36,1) — easeOutQuint.
+     PRINCIPLES §1 is 11/11, so the library value wins for page motion.
+     --ease-bounce is the design system's own and stays untouched: the brand
+     rations it to cow moments only.                                        */
+  --ease-quint: cubic-bezier(0.22, 1, 0.36, 1);   /* the house curve */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);     /* override, see above */
+  --ease-ui: cubic-bezier(0, 0, 0.2, 1);          /* short UI transitions */
+
+  /* Curtain curves, carried over from the kumo-matcha build's GSAP timeline.
+     GSAP's named eases have no CSS equivalent, so these are the standard
+     cubic-bezier approximations of the two it uses:
+       expo.inOut — the slow, weighted parting of the panels
+       circ.inOut — the label wipe and the wordmark drift
+     Both are in-out by design: the panels ease away from rest AND settle at
+     the edge, which is what stops the opening reading like a hard slide. */
+  --ease-curtain-part: cubic-bezier(0.87, 0, 0.13, 1);   /* ≈ expo.inOut */
+  --ease-curtain-wipe: cubic-bezier(0.85, 0, 0.15, 1);   /* ≈ circ.inOut */
+
+  --duration-reveal: 760ms;   /* library range 0.6–1.0s */
+  --duration-theme: 500ms;    /* Mercury's cross-fade */
+
+  /* ─── 3. Semantic section themes ────────────────────────────────────────
+     PRINCIPLES §13. Components read these four, never a raw ramp value, so a
+     single class swap on <section> repaints the block. The design system's
+     own semantic aliases are the defaults; these are the per-section overrides. */
+  --sec-bg: var(--hugo-white);
+  --sec-text: var(--hugo-plum-800);
+  --sec-heading: var(--hugo-plum-800);
+  --sec-rule: var(--hugo-plum-800);
+  --sec-muted: color-mix(in oklab, var(--hugo-plum-800) 62%, transparent);
+
+  /* ─── 4. Fluid display type ─────────────────────────────────────────────
+     PRINCIPLES §3: display type must be fluid, body may be stepped. The design
+     system ships fixed rem display sizes (88/60/40px). Strategy B — per-value
+     clamps, the Air/Cosmos approach — because this build is plain CSS with no
+     root-font-size machinery. Ceilings match the design system exactly, so a
+     1440px desktop renders the intended scale.                              */
+  --size-display-1: clamp(2.75rem, 9.2vw, 5.5rem);   /* 44 → 88px */
+  --size-display-2: clamp(2rem, 6.1vw, 3.75rem);     /* 32 → 60px */
+  --size-display-3: clamp(1.5rem, 3.6vw, 2.5rem);    /* 24 → 40px */
+  --size-hero: clamp(3rem, 13vw, 9rem);              /* hero only, above the DS scale */
+
+  /* ─── 5. Hero runway geometry ───────────────────────────────────────────
+     The scrub runway. 260vh desktop: the stage is pinned for 160vh, then
+     travels off over the final 100vh, and the clip scrubs across BOTH (see
+     measure() in js/site.js — progress spans the stage's whole time on
+     screen, so the playhead never parks while it is visible). The stage
+     unsticks at progress 0.615, which is where the ramp hands the tail wag
+     over to the exit.
+
+     Retuned from 320vh against the real clip's measured motion. The clip's
+     beats are unevenly distributed: 86% of all visual change is in frames
+     0-59, and frames 60-120 are a near-static tail wag. At 320vh the tail
+     commanded over 1000px of scrolling for almost no change — a dead track.
+     260vh, combined with the speed ramp in js/site.js, keeps the tail as a
+     real resting beat without making the reader pay for it, and puts the
+     slowest beat at ~2.8 frames per 100px of scroll.
+
+     Mobile keeps the SAME RATIO, not a smaller number. The ramp's handover
+     point (p=0.615) is where the spin ends and the stage starts to leave, and
+     that point is a function of runway/viewport: at 260vh the stage unsticks
+     at (260-100)/260 = 0.615, which is exactly where the ramp hands over. Drop
+     mobile to 200vh and it unsticks at 0.50 instead — the tumble then plays
+     while the stage is sliding off screen, which is the one thing the mapping
+     exists to prevent. So mobile is 260vh too; it is a shorter runway in
+     pixels because the viewport is shorter, which is the intent.
+
+     These two are tuned TOGETHER. If you change this, re-check the ramp. */
+  --runway-h: 260vh;
+  --runway-h-mobile: 260vh;
+}
+
+/* Section theme classes. One class swap repaints the block. */
+.t-white {
+  --sec-bg: var(--hugo-white);
+  --sec-text: var(--hugo-plum-800);
+  --sec-heading: var(--hugo-plum-800);
+  --sec-rule: var(--hugo-plum-800);
+}
+.t-lilac {
+  --sec-bg: var(--hugo-lilac);
+  --sec-text: var(--hugo-plum-900);      /* NEVER plum-800 at body size on lilac */
+  --sec-heading: var(--hugo-plum-900);
+  --sec-rule: var(--hugo-plum-900);
+  --sec-muted: color-mix(in oklab, var(--hugo-plum-900) 74%, transparent);
+}
+.t-cream {
+  --sec-bg: var(--hugo-cream);
+  --sec-text: var(--hugo-plum-800);
+  --sec-heading: var(--hugo-plum-800);
+  --sec-rule: var(--hugo-plum-800);
+}
+.t-plum {
+  --sec-bg: var(--hugo-plum-800);
+  --sec-text: var(--hugo-cream-100);
+  --sec-heading: var(--hugo-cream-100);
+  --sec-rule: var(--hugo-cream-200);
+  --sec-muted: color-mix(in oklab, var(--hugo-cream-100) 72%, transparent);
+}
+
+/* Applied by every themed block. Mercury's cross-fade timing. */
+.themed {
+  background: var(--sec-bg);
+  color: var(--sec-text);
+  transition: background-color var(--duration-theme) var(--ease-ui),
+              color var(--duration-theme) var(--ease-ui);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --duration-reveal: 1ms; --duration-theme: 1ms; }
+}
+
+/* ─── 6. Engine surface mapping ─────────────────────────────────────────────
+   vendor/scrollcraft.css ships as the DEVICE LAYER ONLY — its own token block
+   was stripped, because it is a dark-canvas theme that would fight the design
+   system (see the header of that file). These are the handful of --sc-* values
+   the remaining devices and vendor/scrollcraft.js still read. Every one
+   resolves to a design-system token; nothing new is invented here.
+
+   The z-indices sit BELOW .nav (z-index 40 in css/site.css) so a pinned stage
+   never paints over the bar. --sc-z-chrome drives the engine's optional scroll
+   progress bar, which this page does not use; it is mapped anyway so the
+   device layer resolves cleanly.                                            */
+:root {
+  --sc-canvas: var(--hugo-white);        /* engine reads this for scrim mixes */
+  --sc-accent: var(--hugo-pink);         /* = --focus-ring, the page's one pink */
+  --sc-gutter: var(--gutter);
+  --sc-ease-out: var(--ease-quint);      /* the house curve, see §2 */
+  --sc-d-slow: var(--duration-slow);
+
+  --sc-z-stage: 1;
+  --sc-z-copy: 20;
+  --sc-z-chrome: 30;
+}

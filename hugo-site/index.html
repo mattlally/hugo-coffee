@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- viewport-fit=cover lets the page paint INTO the iPhone's safe areas — the
+     notch strip at the top and the home-indicator strip at the bottom. Without
+     it iOS reserves those bands and fills them with the page background, so a
+     full-bleed section (the plum curtain, the lilac hero) stops short of the
+     screen edges and reads as two mismatched colours top and bottom. -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+<!-- Safari tints the status bar and the URL-bar surround from this. It is
+     updated by js/site.js as the reader moves between sections, so those
+     strips track the section behind them instead of holding one colour. The
+     value here is the curtain's plum, which is what covers the screen at
+     first paint. -->
+<meta name="theme-color" content="#562A42">
+
+<title>Hugo — a coffee shop run by a small purple cow</title>
+<meta name="description" content="Hugo is a coffee shop at 412 Bleecker St in the West Village. Every drink is one of his moods. 7a to 7p, every day.">
+
+<link rel="icon" href="assets/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="assets/favicon.png">
+
+<!-- The poster paints first and is what reduced-motion readers keep, so it is
+     the preload. The clip is fetched by the <video> preload="auto"; hinting it
+     here as well would race the poster for the first paint. -->
+<link rel="preload" as="image" href="media/hero-poster.png">
+
+<!-- Client design system, vendored unmodified. Source of truth for colour,
+     type, spacing and shape. Never redefined — only layered over. -->
+<link rel="stylesheet" href="vendor/tokens/fonts.css">
+<link rel="stylesheet" href="vendor/tokens/colors.css">
+<link rel="stylesheet" href="vendor/tokens/typography.css">
+<link rel="stylesheet" href="vendor/tokens/spacing.css">
+<link rel="stylesheet" href="vendor/tokens/shape.css">
+<link rel="stylesheet" href="vendor/tokens/motion.css">
+<link rel="stylesheet" href="vendor/tokens/base.css">
+
+<!-- This build's layer: font fallbacks, motion curves, section themes,
+     fluid display type, runway geometry, and the engine surface mapping. -->
+<link rel="stylesheet" href="brand/tokens.css">
+
+<!-- The scroll engine's DEVICE layer — the sticky stage and the scrub/pan/
+     reveal/cue mechanics used by the mood machine, the drop and the shop.
+     Its own token block and reset were stripped when vendored; see the file
+     header. It must load BEFORE site.css so page styles can override it. -->
+<link rel="stylesheet" href="vendor/scrollcraft.css">
+
+<link rel="stylesheet" href="css/site.css">
+
+<!-- Always open at the hero, never where the reader last was.
+
+     This is inline in the <head>, not in js/site.js, on purpose. Browsers
+     restore the previous scroll position during load, and js/site.js is at
+     the end of <body> — by the time it ran, the restore could already have
+     happened and been painted, so the reader would see the page flash to
+     mid-document and jump back. Setting the flag before the document body
+     is parsed means the restore never occurs at all.
+
+     scrollRestoration alone is the whole fix for a plain refresh. The load
+     handler only covers the case where the browser has still landed somewhere
+     other than the top by the time everything has decoded — late-loading
+     media above the fold can shift layout and carry the viewport with it.
+
+     It deliberately does NOT fire when the URL carries a hash. A #visit link
+     someone shared, and the skip-to-menu link a keyboard reader just used,
+     must both still land on their section — forcing those to the top would
+     break a shared deep link and defeat an accessibility control. -->
+<script>
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+  addEventListener("load", function () {
+    if (!location.hash) window.scrollTo(0, 0);
+  });
+</script>
+</head>
+
+<body>
+
+<!-- ─── Curtain ─────────────────────────────────────────────────────────────
+     Ported from the kumo-matcha build: two 50%-wide panels part to the sides
+     to unveil the hero, with the lockup wiping away just before they move.
+
+     THREE departures from that source, all forced by this build:
+
+     1. Plum, not the hero's colour. Kumo's curtain is its page ground, so it
+        parts onto a matching field. Ours cannot — the hero behind it is lilac
+        and the marquee under that is cream, so a curtain in either would part
+        onto itself and read as nothing moving. plum-800 is the system's INK
+        and the darkest value we own: it parts dark-to-light, which is the
+        whole point of the device.
+
+     2. CSS keyframes, not GSAP. Kumo drives this from a timeline; this page
+        has no framework and CSS owns every pixel of motion. JS toggles one
+        class and listens for one animationend.
+
+     3. It is inert without JS and skipped under reduced-motion — see the
+        `hidden` attribute below and the guard in js/site.js. A curtain that
+        never opens is a blank page, so it must never be the default state. -->
+<div class="curtain" id="curtain" aria-hidden="true" hidden>
+  <div class="curtain-panel curtain-panel--left"></div>
+  <div class="curtain-panel curtain-panel--right"></div>
+  <div class="curtain-logo">
+    <!-- The wordmark is near-black ink artwork and the curtain is plum, so it
+         sits in a solid cream capsule — the same treatment the footer uses for
+         this exact mark on this exact ground. The system's rule for a mark
+         over a colour block is a field behind it, never a recolour. -->
+    <span class="curtain-capsule">
+      <img src="assets/wordmark.png" alt="" width="1195" height="519">
+    </span>
+    <div class="curtain-label-mask">
+      <span class="curtain-label">west village</span>
+    </div>
+  </div>
+</div>
+
+<a class="skip" href="#menu">skip to the menu</a>
+
+<!-- ─── Nav ─────────────────────────────────────────────────────────────── -->
+<nav class="nav" data-hidden="false" data-solid="false">
+  <a class="nav-mark" href="#top">
+    <img src="assets/wordmark.png" alt="Hugo" width="1195" height="519">
+    <span>west village</span>
+  </a>
+  <div class="nav-links">
+    <a href="#menu">the menu</a>
+    <a href="#drop">the drop</a>
+    <a href="#outback">out back</a>
+    <a href="#shop">shop</a>
+    <a class="nav-cta" href="#visit">visit</a>
+  </div>
+</nav>
+
+<main id="top">
+
+  <!-- ─── 1. HERO — the signature moment ───────────────────────────────────
+       The wordmark slides away and the ice drops, and the coffee erupts as
+       the camera pushes in.
+
+       The clip is scroll-scrubbed, not played: js/site.js writes
+       video.currentTime through a speed ramp. It is muted and has no audio
+       track at all, so no autoplay policy applies.
+
+       The poster is hero-poster.png — the clip's own frame 0, extracted from
+       the encode. NOT HERO_A.png, which was the poster while the hero ran a
+       still: the two are different drinks (HERO_A is an opaque orange latte,
+       the clip opens on a layered iced one), so using it made the hero pop
+       visibly the moment the video decoded. Frame 0 is the same designed
+       composition and degrades identically, without the swap.
+       HERO_A.png is retained in media/ as the source start-frame. -->
+  <section class="hero-track t-lilac themed" aria-label="Hugo">
+    <div class="hero-stage">
+
+      <div class="hero-media">
+        <video muted playsinline preload="auto" disablepictureinpicture
+               poster="media/hero-poster.png"
+               width="2240" height="960"
+               aria-label="A house oat latte on a lilac background. Ice falls in, the coffee erupts, and the cup turns to face you.">
+          <source src="media/hero.mp4" type="video/mp4">
+          <source src="media/hero.webm" type="video/webm">
+          <img src="media/hero-poster.png" alt="A house oat latte on a lilac background" width="2240" height="960">
+        </video>
+      </div>
+
+      <div class="hero-lockup">
+        <img src="assets/wordmark.png" alt="Hugo" width="1195" height="519">
+        <p class="hero-sub">Serious coffee. Unserious cow.</p>
+      </div>
+
+      <h1 class="visually-hidden">Hugo — serious coffee, unserious cow</h1>
+
+      <div class="hero-cue" aria-hidden="true">scroll</div>
+
+    </div>
+  </section>
+
+  <!-- ─── 2. Marquee ────────────────────────────────────────────────────── -->
+  <div class="marquee t-cream themed" aria-hidden="true">
+    <div class="marquee-track">
+      <span class="marquee-item">a little weird. very good.</span>
+      <span class="marquee-item">the cow has taste.</span>
+      <span class="marquee-item">trust the cow.</span>
+      <span class="marquee-item">offbeat coffee, properly made.</span>
+      <span class="marquee-item">not for everyone. on purpose.</span>
+    </div>
+  </div>
+
+  <!-- ─── 3. Meet Hugo ──────────────────────────────────────────────────────
+       Moved above the menu, and repainted WHITE. It follows the cream
+       marquee, and cream-on-cream would erase the boundary between them. -->
+  <section id="hugo" class="block t-white themed">
+    <div class="wrap duo">
+
+      <div class="photo-seal-wrap" data-reveal>
+        <!-- Carries a printed film border in the file. No frame, no radius. -->
+        <img class="photo photo-bordered" src="assets/photography/plush-counter.png"
+             alt="Hugo the plush cow on the counter, next to a takeaway cup"
+             width="1536" height="2752" loading="lazy" decoding="async">
+        <!-- The seal is pale-lilac ink on transparent. It needs a photograph
+             or a warm ground behind it — on the lilac block it vanishes. -->
+        <img class="photo-seal" src="assets/badge-seal.png" alt="" width="578" height="586" aria-hidden="true">
+      </div>
+
+      <div>
+        <div data-reveal>
+          <h2 class="h-sm">MEET HUGO.</h2>
+        </div>
+        <div class="stack">
+          <p class="body" data-reveal style="--reveal-delay:60ms">He is a small purple cow. He has worked here since the shop opened and has never once been asked to.</p>
+          <p class="body" data-reveal style="--reveal-delay:120ms">He has opinions about milk. He does not have opinions about single origin. Once a month he feels something new and it goes on the board, and when he is over it, it comes off.</p>
+          <p class="body" data-reveal style="--reveal-delay:200ms">He is a little dramatic. The coffee is not.</p>
+        </div>
+        <p class="tagline" data-reveal style="--reveal-delay:280ms; margin-top: var(--space-6)">The cow knows good coffee.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─── 4. The mood machine ───────────────────────────────────────────────
+       Ported from the scroll-test build. A pinned 100vh stage: the act owns
+       6 viewport-heights of scroll, and each sixth lights one mood — the cow
+       swaps, the row lifts, and the whole ground repaints to that feeling's
+       colour. Driven by moodScroll() in js/site.js; the pinning itself is the
+       engine's data-sc-act="pin" device.
+
+       .themed is deliberately ABSENT here. This block paints its own ground
+       from --ground and drives its own text colour per mood, so a theme class
+       would fight it for the same properties. -->
+  <section id="menu" class="act moods" data-sc-act="pin" data-sc-span="6" aria-label="The mood menu">
+    <div class="sc-stage moods-stage">
+
+      <header class="moods-head">
+        <h2 class="h-display">SIX MOODS. ONE MENU.</h2>
+        <p class="support">every drink is one of his moods.</p>
+      </header>
+
+      <div class="moods-rig">
+
+        <div class="moods-cow">
+          <img src="assets/moods/usual.png"         alt="" width="232" height="272" data-mood="0">
+          <img src="assets/moods/purple-day.png"    alt="" width="232" height="272" data-mood="1">
+          <img src="assets/moods/monday-bruise.png" alt="" width="232" height="272" data-mood="2">
+          <img src="assets/moods/cow-in-green.png"  alt="" width="232" height="272" data-mood="3">
+          <img src="assets/moods/content.png"       alt="" width="232" height="272" data-mood="4">
+          <img src="assets/moods/sulky.png"         alt="" width="232" height="272" data-mood="5">
+        </div>
+
+        <ol class="moods-list">
+          <li data-mood="0">
+            <h3>THE USUAL</h3>
+            <p>house oat latte. steady, dependable, a little boring on purpose.</p>
+            <span class="moods-price">$5</span>
+          </li>
+          <li data-mood="1">
+            <h3>PURPLE DAY</h3>
+            <p>vanilla latte, ube cold foam. the cow's good day. the signature.</p>
+            <span class="moods-price">$6</span>
+          </li>
+          <li data-mood="2">
+            <h3>THE MONDAY BRUISE</h3>
+            <p>nitro cold brew. you know the feeling.</p>
+            <span class="moods-price">$5</span>
+          </li>
+          <li data-mood="3">
+            <h3>COW IN GREEN</h3>
+            <p>mint matcha. the emotional detox.</p>
+            <span class="moods-price">$6</span>
+          </li>
+          <li data-mood="4">
+            <h3>CONTENT</h3>
+            <p>cortado. short, warm, no notes.</p>
+            <span class="moods-price">$4</span>
+          </li>
+          <li data-mood="5">
+            <h3>SULKY</h3>
+            <p>black filter. he'll be fine.</p>
+            <span class="moods-price">$4</span>
+          </li>
+        </ol>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─── 5. The drop ───────────────────────────────────────────────────────
+       Ported from the scroll-test build: a pinned stage where the photograph
+       wipes up on a scroll cue (data-sc-reveal). The copy column is OURS —
+       THE BURNOUT, the meta lines and the button — dropped into that layout. -->
+  <section id="drop" class="act drop t-lilac themed" data-sc-act="pin" data-sc-span="1.5">
+    <div class="sc-stage drop-stage">
+
+      <div class="drop-copy">
+        <p class="label">the drop</p>
+        <span class="flag">this month only</span>
+        <h2 class="drop-name">THE BURNOUT</h2>
+        <p class="body drop-meta">burnt caramel latte · oat milk · a little salt</p>
+        <p class="body drop-meta">the cow is processing something. you get to drink it. when the mood's over, the drink is gone.</p>
+        <p class="drop-when">here until it isn't</p>
+        <div class="btn-row">
+          <a class="btn" href="#visit">come get it</a>
+        </div>
+      </div>
+
+      <figure class="drop-shot" data-sc-reveal="up" data-sc-cue="0.08">
+        <!-- The scroll-test build's shot, as-is: a wide-crop photograph the
+             CSS frames with the ink border, card radius and sticker shadow. -->
+        <img src="assets/photography/drop-iced-orange.jpg"
+             alt="A hand holding a Hugo latte on a terrazzo counter"
+             width="1536" height="1920" loading="lazy" decoding="async">
+      </figure>
+
+    </div>
+  </section>
+
+  <!-- ─── 6. The card ───────────────────────────────────────────────────────
+       Ours, unchanged. Cream, so it separates the lilac drop above from the
+       paper of Out back below. -->
+  <section class="block t-cream themed">
+    <div class="wrap duo">
+
+      <div>
+        <div data-reveal>
+          <h2 class="h-sm">SIX MOODS.<br>ONE FREE.</h2>
+        </div>
+        <p class="body" data-reveal style="--reveal-delay:80ms; margin-top: var(--space-5); max-width: 34ch">
+          collect all six. the cow buys the last one. every stamp is a different feeling, and six of them makes you a regular.
+        </p>
+        <img class="card-cow" src="assets/moods/content.png" alt="" width="232" height="272" aria-hidden="true" data-reveal style="--reveal-delay:160ms">
+      </div>
+
+      <div class="stampcard" data-reveal style="--reveal-delay:120ms">
+        <h3>THE MOOD CARD</h3>
+        <!-- Six stamps. The one --ease-bounce moment on the page: the cow's
+             little hop. Rotations and delays vary per stamp (PRINCIPLES §5). -->
+        <div class="stamps">
+          <div class="stamp" data-filled="true"  style="--stamp-rot:-7deg;  --stamp-delay:0ms">
+            <img src="assets/moods/usual.png" alt="" width="232" height="272" aria-hidden="true"></div>
+          <div class="stamp" data-filled="true"  style="--stamp-rot:5deg;   --stamp-delay:90ms">
+            <img src="assets/moods/purple-day.png" alt="" width="232" height="272" aria-hidden="true"></div>
+          <div class="stamp" data-filled="true"  style="--stamp-rot:-3deg;  --stamp-delay:210ms">
+            <img src="assets/moods/monday-bruise.png" alt="" width="232" height="272" aria-hidden="true"></div>
+          <div class="stamp" data-filled="true"  style="--stamp-rot:9deg;   --stamp-delay:250ms">
+            <img src="assets/moods/cow-in-green.png" alt="" width="232" height="272" aria-hidden="true"></div>
+          <div class="stamp" data-filled="true"  style="--stamp-rot:-5deg;  --stamp-delay:320ms">
+            <img src="assets/moods/content.png" alt="" width="232" height="272" aria-hidden="true"></div>
+          <div class="stamp" data-filled="false"></div>
+        </div>
+        <p class="body muted" style="margin-top: var(--space-5); font: var(--type-body-sm)">five down. one to go. the cow is getting attached.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─── 7. Out back ───────────────────────────────────────────────────────
+       Ported from the scroll-test build: the Backyard Sessions poster beside
+       the copy, both fading up once on entry (data-sc-in). A flow act — no
+       pinning, so it reads as a held beat between two pinned stages. -->
+  <section id="outback" class="act back">
+    <div class="back-wrap">
+
+      <figure class="back-poster" data-sc-in>
+        <img src="assets/print/poster-backyard.png"
+             alt="A Backyard Sessions poster — live music out back, every Friday"
+             width="1024" height="1536" loading="lazy" decoding="async">
+      </figure>
+
+      <div class="back-copy" data-sc-in data-sc-stagger="60">
+        <h2 class="h-display">BACKYARD SESSIONS.</h2>
+        <p class="support">live music out back. every friday.</p>
+        <p class="back-meta">fri · 7pm · free · bring a friend</p>
+        <p class="body">records, a small yard, whatever the cow is into this week. bring a book, or don't.</p>
+        <p class="tagline">the cow insists.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─── 8. Shop ───────────────────────────────────────────────────────────
+       Ported from the scroll-test build: a lateral pan. The act owns 3
+       viewport-heights, and the engine translates the rail sideways across
+       them, so scrolling down travels the shelf. Hovering an item washes the
+       photo in ink and brings its description up; :focus-within gives keyboard
+       readers the same. Below 860px the rail is a normal scroll region. -->
+  <section id="shop" class="act shop" data-sc-act="pan" data-sc-span="3">
+    <div class="sc-stage shop-stage">
+
+      <div class="shop-head">
+        <p class="label">our products</p>
+        <h2 class="h-display">TAKE THE COW HOME.</h2>
+        <p class="support">cans, beans, and a plush that judges you.</p>
+      </div>
+
+      <div class="shop-rail" data-sc-pan="0.62" role="group"
+           aria-label="Take the cow home: cans, beans, the plush, stickers and merch" tabindex="0">
+
+        <figure class="shop-item">
+          <div class="shop-frame">
+            <img src="assets/photography/cans-trio.png" alt="Three Hugo cold brew cans"
+                 width="1024" height="1280" loading="lazy" decoding="async">
+            <div class="shop-veil"><p>cold brew, canned the morning it is pulled. four moods, twelve to a case.</p></div>
+          </div>
+          <figcaption>CANS<span>cold brew, four ways</span></figcaption>
+        </figure>
+
+        <figure class="shop-item">
+          <div class="shop-frame">
+            <img src="assets/photography/beans-black-bag.png" alt="A black bag of Hugo beans"
+                 width="1024" height="1280" loading="lazy" decoding="async">
+            <div class="shop-veil"><p>roasted in small batches. whole or ground, and the cow has opinions about which.</p></div>
+          </div>
+          <figcaption>BEANS<span>whole or ground</span></figcaption>
+        </figure>
+
+        <figure class="shop-item">
+          <div class="shop-frame">
+            <img src="assets/photography/plush-counter.png" alt="The Hugo plush cow on the counter"
+                 width="1024" height="1280" loading="lazy" decoding="async">
+            <div class="shop-veil"><p>the cow, actual size. he sits on the counter and watches you work.</p></div>
+          </div>
+          <figcaption>THE PLUSH<span>he comes home with you</span></figcaption>
+        </figure>
+
+        <figure class="shop-item">
+          <div class="shop-frame">
+            <img src="assets/photography/sticker-packs.png" alt="Hugo sticker packs, six moods die cut"
+                 width="1024" height="1280" loading="lazy" decoding="async">
+            <div class="shop-veil"><p>six moods, die cut, weatherproof. one goes on the laptop, the rest go missing.</p></div>
+          </div>
+          <figcaption>STICKERS<span>for the laptop</span></figcaption>
+        </figure>
+
+        <figure class="shop-item">
+          <div class="shop-frame">
+            <img src="assets/photography/apron-back.png" alt="A Hugo apron in the house lilac"
+                 width="1024" height="1280" loading="lazy" decoding="async">
+            <div class="shop-veil"><p>aprons, totes and caps in the house lilac. worn by staff, sold to regulars.</p></div>
+          </div>
+          <figcaption>MERCH<span>aprons, totes, caps</span></figcaption>
+        </figure>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─── 9. Visit ──────────────────────────────────────────────────────────
+       Cream, not white. The shop act above it is white, so a white visit
+       block ran the two together with no seam at all. Cream is already one of
+       this page's two grounds beyond white (the system caps it there), so it
+       costs no new colour, and cream → plum is the sharpest value step on the
+       page — which is what you want under the last section before the footer. -->
+  <section id="visit" class="block t-cream themed">
+    <div class="wrap duo">
+
+      <div>
+        <div data-reveal>
+          <h2 class="h-sm">412 BLEECKER ST.</h2>
+        </div>
+        <div class="visit-lines" data-reveal style="--reveal-delay:80ms">
+          <span>the west village, new york city</span>
+          <span class="muted">7a to 7p, every day</span>
+          <span class="muted">look for the navy awning and the chalkboard</span>
+        </div>
+        <div class="btn-row" data-reveal style="--reveal-delay:160ms">
+          <a class="btn" href="https://maps.google.com/?q=412+Bleecker+St+New+York+NY+10014" target="_blank" rel="noopener">getting here</a>
+        </div>
+      </div>
+
+      <div data-reveal style="--reveal-delay:120ms">
+        <img class="visit-photo" src="assets/photography/storefront-lilac.png"
+             alt="The Hugo storefront on Bleecker Street, lilac brick and a painted window"
+             width="768" height="1376" loading="lazy" decoding="async">
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<!-- ─── 10. Footer ──────────────────────────────────────────────────────── -->
+<footer class="footer t-plum themed">
+  <div class="wrap">
+
+    <div class="footer-top">
+      <div>
+        <!-- The wordmark is ink-on-transparent artwork and must never be
+             recoloured or filtered. On the plum ground it sits in a solid
+             cream capsule, per the design system's rule for marks over a
+             colour block. -->
+        <span class="footer-capsule">
+          <img class="footer-mark" src="assets/wordmark.png" alt="Hugo" width="1195" height="519" loading="lazy">
+        </span>
+        <p class="footer-tagline">A little weird. Very good.</p>
+      </div>
+      <nav class="footer-nav" aria-label="Footer">
+        <a href="#menu">the menu</a>
+        <a href="#drop">the drop</a>
+        <a href="#outback">out back</a>
+        <a href="#shop">shop</a>
+        <a href="#visit">visit</a>
+      </nav>
+    </div>
+
+    <hr class="footer-rule">
+
+    <div class="footer-fine">
+      <span>412 bleecker st, new york, ny 10014 · 7a to 7p</span>
+      <span>come twice and the cow calls you a regular</span>
+    </div>
+
+  </div>
+</footer>
+
+<!-- The scroll engine. Manual-mount: it exposes ScrollCraft.mount() and does
+     not auto-init, so site.js decides when the DOM is ready to be measured.
+     It must load BEFORE site.js, which calls that mount. -->
+<script src="vendor/scrollcraft.js"></script>
+<script src="js/site.js"></script>
+
+</body>
+</html>

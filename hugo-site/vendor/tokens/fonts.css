@@ -1,0 +1,8 @@
+/* Hugo webfonts.
+   NOTE — SUBSTITUTIONS. Hugo's wordmark is custom hand-drawn lettering; it is not a
+   font and must always be used as artwork (assets/wordmark.png, assets/logo-lockup-lilac.png).
+   The three type roles below are the nearest Google Fonts matches, per the brand one-pager.
+   If real licensed files exist (a bespoke bubble display, in particular), drop the binaries
+   in assets/fonts/ and replace these @import lines with @font-face rules. */
+
+@import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Bagel+Fat+One&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Space+Grotesk:wght@400;500;600;700&display=swap");

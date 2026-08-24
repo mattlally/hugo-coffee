@@ -1,0 +1,66 @@
+:root {
+  /* ---- Core palette (sampled from the brand one-pager + artwork) ---- */
+  --hugo-lilac: #D0B9D3;        /* primary. the cow, the brand field colour */
+  --hugo-cream: #F5EECD;        /* secondary. paper stock, menu cards */
+  --hugo-plum: #562A42;         /* accent. the INK of the system */
+  --hugo-white: #FFFFFF;        /* default page ground */
+
+  /* ---- Extended, sampled from real artwork ---- */
+  --hugo-ink: #16110F;          /* illustration outline black. cows, wordmark, posters */
+  --hugo-pink: #F0879F;         /* sticker pink. sampled from the Backyard Sessions poster */
+  --hugo-paper: #E6DBC5;        /* aged poster stock. warmer + dirtier than cream */
+
+  /* ---- Product colours (derived from photography, not from the one-pager) ---- */
+  --hugo-ube: oklch(0.62 0.17 305);     /* vivid ube foam. brighter than brand lilac */
+  --hugo-matcha: oklch(0.72 0.15 145);  /* cow in green */
+
+  /* ---- Lilac tints/shades ---- */
+  --hugo-lilac-100: #F4EEF5;
+  --hugo-lilac-200: #E8DDEA;
+  --hugo-lilac-300: #D0B9D3;    /* = primary */
+  --hugo-lilac-400: #B49AB9;
+  --hugo-lilac-500: #8E7295;
+
+  /* ---- Plum tints/shades ---- */
+  --hugo-plum-700: #6B3A54;     /* hover lift */
+  --hugo-plum-800: #562A42;     /* = accent */
+  --hugo-plum-900: #3B1B2D;     /* press */
+
+  /* ---- Cream tints ---- */
+  --hugo-cream-100: #FBF8EA;
+  --hugo-cream-200: #F5EECD;    /* = secondary */
+  --hugo-cream-300: #E6DBC5;    /* = paper */
+
+  /* ---- Semantic aliases: text ---- */
+  --text-body: var(--hugo-plum-800);
+  --text-heading: var(--hugo-plum-800);
+  --text-muted: color-mix(in oklab, var(--hugo-plum-800) 62%, transparent);
+  --text-inverse: var(--hugo-cream-100);
+  --text-on-lilac: var(--hugo-plum-900);   /* NEVER plum-800 at body size on lilac */
+  --text-link: var(--hugo-plum-800);
+  --text-link-hover: var(--hugo-plum-900);
+
+  /* ---- Semantic aliases: surfaces ---- */
+  --surface-page: var(--hugo-white);
+  --surface-block-lilac: var(--hugo-lilac);
+  --surface-block-cream: var(--hugo-cream);
+  --surface-block-plum: var(--hugo-plum);
+  --surface-card: var(--hugo-cream-100);
+  --surface-card-alt: var(--hugo-white);
+  --surface-paper: var(--hugo-paper);
+  --surface-ink: var(--hugo-ink);
+
+  /* ---- Semantic aliases: lines + marks ---- */
+  --line-ink: var(--hugo-ink);
+  --line-hairline: color-mix(in oklab, var(--hugo-plum-800) 22%, transparent);
+  --line-rule: var(--hugo-plum-800);
+  --mark-drop: var(--hugo-pink);        /* limited / this-month-only flags */
+  --mark-stamp: var(--hugo-lilac-400);
+
+  /* ---- Interaction ---- */
+  --action-fill: var(--hugo-plum-800);
+  --action-fill-hover: var(--hugo-plum-700);
+  --action-fill-press: var(--hugo-plum-900);
+  --action-text: var(--hugo-cream-100);
+  --focus-ring: var(--hugo-pink);
+}

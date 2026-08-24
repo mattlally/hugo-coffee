@@ -1,0 +1,49 @@
+:root {
+  /* ---- Families. Three roles, never more. ---- */
+  --font-display: "Fredoka", "Baloo 2", system-ui, sans-serif;   /* headlines, caps */
+  --font-sticker: "Bagel Fat One", "Fredoka", system-ui, sans-serif; /* one-word poster/sticker lettering */
+  --font-tagline: "EB Garamond", Georgia, serif;                  /* italic taglines only */
+  --font-body: "Space Grotesk", ui-sans-serif, system-ui, sans-serif; /* details, menus, long copy */
+  --font-mono: "Space Grotesk", ui-monospace, monospace;
+
+  /* ---- Weights ---- */
+  --weight-display: 600;
+  --weight-display-heavy: 700;
+  --weight-body: 400;
+  --weight-body-medium: 500;
+  --weight-body-bold: 600;
+
+  /* ---- Scale ---- */
+  --size-display-1: 5.5rem;   /* 88px  hero headline */
+  --size-display-2: 3.75rem;  /* 60px  section headline */
+  --size-display-3: 2.5rem;   /* 40px  card headline */
+  --size-title: 1.5rem;       /* 24px  drink name, event name */
+  --size-body-lg: 1.125rem;   /* 18px  lead paragraph */
+  --size-body: 1rem;          /* 16px  body */
+  --size-body-sm: 0.875rem;   /* 14px  descriptions, details */
+  --size-caption: 0.75rem;    /* 12px  hours, meta, labels */
+  --size-tagline: 1.25rem;    /* 20px  italic serif tagline */
+  --size-tagline-sm: 0.9375rem;
+
+  /* ---- Line heights ---- */
+  --leading-display: 0.92;
+  --leading-title: 1.15;
+  --leading-body: 1.55;
+  --leading-tight: 1.25;
+
+  /* ---- Tracking. Display is chunky and nearly touching. ---- */
+  --tracking-display: -0.02em;
+  --tracking-caps: 0.08em;    /* small caps labels */
+  --tracking-body: 0;
+
+  /* ---- Role bundles ---- */
+  --type-display-1: var(--weight-display-heavy) var(--size-display-1) / var(--leading-display) var(--font-display);
+  --type-display-2: var(--weight-display-heavy) var(--size-display-2) / var(--leading-display) var(--font-display);
+  --type-display-3: var(--weight-display) var(--size-display-3) / var(--leading-title) var(--font-display);
+  --type-title: var(--weight-body-bold) var(--size-title) / var(--leading-title) var(--font-body);
+  --type-body: var(--weight-body) var(--size-body) / var(--leading-body) var(--font-body);
+  --type-body-lg: var(--weight-body) var(--size-body-lg) / var(--leading-body) var(--font-body);
+  --type-body-sm: var(--weight-body) var(--size-body-sm) / var(--leading-body) var(--font-body);
+  --type-caption: var(--weight-body-medium) var(--size-caption) / var(--leading-tight) var(--font-body);
+  --type-tagline: italic var(--weight-body) var(--size-tagline) / 1.35 var(--font-tagline);
+}

@@ -1,0 +1,40 @@
+# Publishes hugo-site/ to GitHub Pages.
+#
+# Pages' built-in "deploy from a branch" mode can only serve the repo root or
+# /docs. The site lives in hugo-site/, so this workflow uploads that directory
+# as the Pages artifact instead. No build step — the site is static HTML/CSS/JS
+# with no toolchain.
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Let a running deploy finish rather than cancelling it mid-publish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: hugo-site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

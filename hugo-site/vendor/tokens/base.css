@@ -1,0 +1,19 @@
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--surface-page);
+  color: var(--text-body);
+  font: var(--type-body);
+  -webkit-font-smoothing: antialiased;
+  text-wrap: pretty;
+}
+
+a { color: var(--text-link); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:hover { color: var(--text-link-hover); text-decoration-thickness: 2px; }
+
+:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+
+img { display: block; max-width: 100%; }
+
+::selection { background: var(--hugo-lilac); color: var(--hugo-plum-900); }

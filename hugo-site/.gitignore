@@ -1,0 +1,46 @@
+# ── Secrets ───────────────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+secrets.json
+
+# ── Generated hero assets ─────────────────────────────────────────────────
+# Raw model output and intermediates. The committed deliverables are the
+# encoded hero.mp4 / hero.webm and the poster still — not the raw downloads.
+media/*_raw.png
+media/raw*.mp4
+media/attempts/
+media/frames/
+
+# ── Node ──────────────────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ── Python ────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# ── macOS ─────────────────────────────────────────────────────────────────
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# ── Editors ───────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+
+# ── Build / serve ─────────────────────────────────────────────────────────
+dist/
+.cache/
+*.log
+
+# Kie task ids (recovery log)
+.kie-tasks.log
